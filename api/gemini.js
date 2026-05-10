@@ -1,5 +1,15 @@
 export default async function handler(req, res) {
-  // Solo permitir peticiones POST
+  // 1. Configurar headers CORS para todas las respuestas
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // 2. Manejar preflight OPTIONS (necesario para CORS)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // 3. Solo permitir POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido' });
   }
@@ -10,7 +20,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No se proporcionó texto seleccionado' });
   }
 
-  // La API Key se lee desde variable de entorno (segura)
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
     console.error('Falta la variable de entorno GEMINI_API_KEY');
@@ -19,7 +28,6 @@ export default async function handler(req, res) {
 
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-  // Prompt IDÉNTICO al que usted tenía en app.js (solo cambian los nombres de las variables)
   const prompt = `Eres un asistente academico especializado en explicar terminos en contexto.
 
 El usuario ha seleccionado la siguiente palabra o frase: "${selectedText}"
